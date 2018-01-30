@@ -2,10 +2,10 @@ import requests
 import database
 from data_model import Airlines
 
-class WizzairScraper(object):
+class WizzairScraper():
     TYPE = Airlines.WIZZ
 
-    def __init__(self):
+    def __init__():
         headers = {
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.95 Safari/537.36",
             "Accept": "application/json, text/plain, */*",
@@ -15,18 +15,19 @@ class WizzairScraper(object):
 
         s = requests.Session()
         s.headers.update(headers)
+
+        # to get cookies
+        r = s.get("https://www.wizzair.com/")
+
         self.session = s
         self.get_api_url()
         print(self.api_url)
 
-    def get_api_url(self):
-        '''
-        ########################################################################################
-        # 1. Get API URL
-        ########################################################################################
-        '''
-        # get from https://wizzair.com/static/metadata.json
+    def get_api_url():
+        
+        # get API from https://wizzair.com/static/metadata.json
         # in ['apiUrl']
+
         url_API = 'https://wizzair.com/static/metadata.json'
         r = self.session.get(url_API)
         data = r.json()
@@ -35,48 +36,42 @@ class WizzairScraper(object):
 
         self.api_url = api_url
 
-    def get_destinations_map(self):
+
+    def get_destinations_cities():
+
+        # get destination map
+        # return dict {Name of City : IAT} for all destination
+        url3 = f'{apiUrl}/asset/map?languageCode=en-gb'
+        list_of_cities ={}
+        r = s.get(url3)
+        map_of_dest = r.json()
+        for x in range (len(map_of_dest['cities'])):
+            list_of_cities[map_of_dest['cities'][x]['shortName']] = map_of_dest['cities'][x]['iata']
+        print (list_of_cities)
+        return (list_of_cities)
 
 
+    def  destination_map():
+        # get all destinatination for each city 
+        # { 'LTN': ['GDN', 'WAW', 'BUD', 'KTW', 'KUN', ...], 'LGW': ['OTP'] }
 
+        url3 = f'{apiUrl}/asset/map?languageCode=en-gb'
+        list_of_cities ={}
+        r = s.get(url3)
+        map_of_dest = r.json()
 
+        wizzair_cities = dict()
 
+        for city in map_of_dest['cities']:
+            city_iata_code = city['iata']
+            a = []
+            wizzair_cities[city_iata_code] = a
+            for connection in city['connections']:
+                a.append(connection['iata'])
+        retur(wizzair_cities)         
+        # print(wizzair_cities)     
 
-
-# to get cookies
-r = s.get("https://www.wizzair.com/")
-
-
-
-
-
-########################################################################################
-# 2. Get destinations map
-########################################################################################
-
-url3 = f'{apiUrl}/asset/map?languageCode=en-gb'
-list_of_cities ={}
-r = s.get(url3)
-map_of_dest = r.json()
-for x in range (len(map_of_dest['cities'])):
-    list_of_cities[map_of_dest['cities'][x]['shortName']] = map_of_dest['cities'][x]['iata']
-print (list_of_cities)
-
-wizzair_cities = dict()
-
-for city in map_of_dest['cities']:
-    city_iata_code = city['iata']
-    a = []
-    wizzair_cities[city_iata_code] = a
-    for connection in city['connections']:
-        a.append(connection['iata'])
-# print(wizzair_cities)        
-
- 
-# print(wizzair_cities) # { 'LTN': ['GDN', 'WAW', 'BUD', 'KTW', 'KUN', ...], 'LGW': ['OTP'] }
-
-
-
+###############################################################################
 
 israel_cities = [x for x in map_of_dest['cities'] if x['countryCode'] == 'IL']
 for city in israel_cities:
@@ -114,62 +109,67 @@ for city in israel_cities:
 # "2018-02-13T00:00:00","2018-02-17T00:00:00","2018-02-20T00:00:00","2018-02-24T00:00:00","2018-02-27T00:00:00",
 # "2018-03-03T00:00:00","2018-03-06T00:00:00","2018-03-10T00:00:00","2018-03-13T00:00:00","2018-03-17T00:00:00",
 # "2018-03-20T00:00:00","2018-03-24T00:00:00","2018-03-27T00:00:00"]}
+#####################################################################################################
 
+    def flight_info(departure_iata, arrival_iata, date):
+        # get information about flight 
+        # param: departure_iata IATA shot name of departure city
+        # param: arrival_iata IATA shot name of arrival city
+        # param: date  in format year-month-day 
+        url = f'{apiUrl}/search/search'
 
-
-url = f'{apiUrl}/search/search'
-
-payload = {
-    "flightList":[
-        {
-            "departureStation": "VNO",
-            "arrivalStation": "TLV",
-            "departureDate": "2018-02-20"
+        payload = {
+            "flightList":[
+                {
+                    "departureStation": departure_iata,
+                    "arrivalStation": arrival_iata,
+                    "departureDate": date
+                }
+            ],
+            "adultCount": 1,
+            "childCount": 0,
+            "infantCount": 0,
+            "wdc": True,
+            "dayInterval": 7
         }
-    ],
-    "adultCount": 1,
-    "childCount": 0,
-    "infantCount": 0,
-    "wdc": True,
-    "dayInterval": 7
-}
 
 
-r = s.post(url, json=payload)
-data = r.json()
-print(data['outboundFlights'][0].keys())
-print(data['outboundFlights'][0]['fares'][0])
+        r = s.post(url, json=payload)
+        data = r.json()
+        
+        airLine = 'WIZZ'
+        outbound_flight =  data['outboundFlights'][0]
+        flightNumber = outbound_flight['flightNumber']
+        departureStation = outbound_flight['departureStation']
+        arrivalStation = outbound_flight['arrivalStation']
+        departureDateTime  = outbound_flight['departureDateTime']
+        fares = outbound_flight['fares'][0]
+        currencyCode = fares['basePrice']['currencyCode']
+        basePrice = fares['basePrice']['amount']
+        discountedPrice = fares['discountedPrice']['amount']
+        administrationFeePrice = fares['administrationFeePrice']['amount']
 
+        y = data_model.ScheduledFlight(airLine, 
+            flightNumber, 
+            departureStation, 
+            arrivalStation, 
+            departureDateTime, 
+            currencyCode, 
+            basePrice, 
+            discountedPrice, 
+            administrationFeePrice)
+        return y
 
-# print(data['outboundFlights'][0]['flightNumber'])
-# print(data['outboundFlights'][0]['departureStation'])
-# print(data['outboundFlights'][0].get('departureDateTime'))
-# print(type(data['outboundFlights'][0].values()))
-airLine = 'WIZZ'
-outbound_flight =  data['outboundFlights'][0]
-flightNumber = outbound_flight['flightNumber']
-departureStation = outbound_flight['departureStation']
-arrivalStation = outbound_flight['arrivalStation']
-departureDateTime  = outbound_flight['departureDateTime']
-fares = outbound_flight['fares'][0]
-currencyCode = fares['basePrice']['currencyCode']
-basePrice = fares['basePrice']['amount']
-discountedPrice = fares['discountedPrice']['amount']
-administrationFeePrice = fares['administrationFeePrice']['amount']
+    def  possible_flights (departure_iata, date1, date2):
+        # get all possible flights from city between these dates
+        #param: departure_iata IATA shot name of departure city
+        # param: date1 date2  in format year-month-day 
+        pass
+        
+    
+        conn = database.create_connection('Vacation.db')
 
-y = data_model.ScheduledFlight(airLine, 
-    flightNumber, 
-    departureStation, 
-    arrivalStation, 
-    departureDateTime, 
-    currencyCode, 
-    basePrice, 
-    discountedPrice, 
-    administrationFeePrice)
-print(y.basePrice)
-conn = database.create_connection('Vacation.db')
-
-database.create_flight(conn,y)
+        database.create_flight(conn,y)
 
 
 # israel_connections = israel['connections']

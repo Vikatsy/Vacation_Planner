@@ -98,7 +98,7 @@ def create_flight(conn, flight):
  	# return list of ScheduledFlight objects
  	pass
 
- 	
+ 	 
 
 if __name__ == '__main__':
 	main()        
