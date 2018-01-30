@@ -1,31 +1,50 @@
 import requests
 import database
-import  data_model 
+from data_model import Airlines
 
-headers = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.95 Safari/537.36",
-    "Accept": "application/json, text/plain, */*",
-    "Accept-Encoding": "gzip, deflate, sdch, br",
-    "Accept-Language": "en-US,en;q=0.8,lt;q=0.6,ru;q=0.4",
-}
+class WizzairScraper(object):
+    TYPE = Airlines.WIZZ
 
-s = requests.Session()
-s.headers.update(headers)
+    def __init__(self):
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.95 Safari/537.36",
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Encoding": "gzip, deflate, sdch, br",
+            "Accept-Language": "en-US,en;q=0.8,lt;q=0.6,ru;q=0.4",
+        }
+
+        s = requests.Session()
+        s.headers.update(headers)
+        self.session = s
+        self.get_api_url()
+        print(self.api_url)
+
+    def get_api_url(self):
+        '''
+        ########################################################################################
+        # 1. Get API URL
+        ########################################################################################
+        '''
+        # get from https://wizzair.com/static/metadata.json
+        # in ['apiUrl']
+        url_API = 'https://wizzair.com/static/metadata.json'
+        r = self.session.get(url_API)
+        data = r.json()
+        apiUrl = data['apiUrl']
+        print (apiUrl)
+
+        self.api_url = api_url
+
+    def get_destinations_map(self):
+
+
+
+
+
+
 
 # to get cookies
 r = s.get("https://www.wizzair.com/")
-
-########################################################################################
-# 1. Get API URL
-########################################################################################
-# get from https://wizzair.com/static/metadata.json
-# in ['apiUrl']
-url_API = 'https://wizzair.com/static/metadata.json'
-r = requests.get(url_API)
-data = r.json()
-apiUrl = data['apiUrl']
-print (apiUrl)
-# apiUrl = 'https://be.wizzair.com/7.8.3/Api/'
 
 
 
@@ -127,14 +146,16 @@ print(data['outboundFlights'][0]['fares'][0])
 # print(data['outboundFlights'][0].get('departureDateTime'))
 # print(type(data['outboundFlights'][0].values()))
 airLine = 'WIZZ'
-flightNumber = data['outboundFlights'][0]['flightNumber']
-departureStation = data['outboundFlights'][0]['departureStation']
-arrivalStation = data['outboundFlights'][0]['arrivalStation']
-departureDateTime  = data['outboundFlights'][0]['departureDateTime']
-currencyCode = data['outboundFlights'][0]['fares'][0]['basePrice']['currencyCode']
-basePrice = data['outboundFlights'][0]['fares'][0]['basePrice']['amount']
-discountedPrice = data['outboundFlights'][0]['fares'][0]['discountedPrice']['amount']
-administrationFeePrice = data['outboundFlights'][0]['fares'][0]['administrationFeePrice']['amount']
+outbound_flight =  data['outboundFlights'][0]
+flightNumber = outbound_flight['flightNumber']
+departureStation = outbound_flight['departureStation']
+arrivalStation = outbound_flight['arrivalStation']
+departureDateTime  = outbound_flight['departureDateTime']
+fares = outbound_flight['fares'][0]
+currencyCode = fares['basePrice']['currencyCode']
+basePrice = fares['basePrice']['amount']
+discountedPrice = fares['discountedPrice']['amount']
+administrationFeePrice = fares['administrationFeePrice']['amount']
 
 y = data_model.ScheduledFlight(airLine, 
     flightNumber, 
@@ -147,9 +168,8 @@ y = data_model.ScheduledFlight(airLine,
     administrationFeePrice)
 print(y.basePrice)
 conn = database.create_connection('Vacation.db')
-flight1 = (y.airLine, y.flightNumber, y.departureStation, y.arrivalStation, y.departureDateTime, 
-            y.currencyCode, y.basePrice, y.discountedPrice, y.administrationFeePrice)
-database.create_flight(conn,flight1)
+
+database.create_flight(conn,y)
 
 
 # israel_connections = israel['connections']

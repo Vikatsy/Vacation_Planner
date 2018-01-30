@@ -94,6 +94,12 @@ def create_flight(conn, flight):
     cur.execute(sql, flight_values)
     return cur.lastrowid
 
+ def get_schediled_flights(conn): 
+ 	# return list of ScheduledFlight objects
+ 	pass
+
+ 	
+
 if __name__ == '__main__':
 	main()        
 
