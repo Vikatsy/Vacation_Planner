@@ -5,11 +5,14 @@ import database as db
 
 
 def main():
-	wizz_scraper = ws.WizzairScraper() # = ws
+	wizz_scraper = ws.WizzairScraper(city, date_interval) # = ws
 	ryan_scraper = rs.RyanairScraper()
 
 	# db_connection = db.create_connection()
 	conn = db.create_connection('Vacation.db')
+
+	my_city = 'TLV'
+	all_wizz_cities = wizz_scraper.get_destinations_cities(my_city)
 
 
 	while(True):

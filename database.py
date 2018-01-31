@@ -95,10 +95,10 @@ def create_flight(conn, flight):
     return cur.lastrowid
 
  def get_schediled_flights(conn): 
- 	# return list of ScheduledFlight objects
+ 	# return list of Flight objects
  	pass
 
- 	 
+
 
 if __name__ == '__main__':
 	main()        

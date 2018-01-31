@@ -8,7 +8,7 @@ class Connection:
 	"""
 	Respresents a connection between two cities.
 	"""
-	def __init__(self, ):
+	def __init__(self, source_airport, dest_airport):
 		"""
 		:param: source_airport IATA code for the source airport
 		:param: dest_airport IATA code for the destination airport
@@ -22,12 +22,14 @@ class Airlines (Enum):
 	RYAN = 'Ryanair'
 
 
-class ScheduledFlight:
+
+class Flight:
 	'''
 	Represents a scheduled flight over a connection.
 	'''
-	def __init__	(self, airLine, flightNumber, departureStation, arrivalStation,
-					departureDateTime, currencyCode, basePrice, discountedPrice, administrationFeePrice):
+	# def __init__	(self, airLine, flightNumber, departureStation, arrivalStation,
+	def __init__	(self, airLine, flightNumber, connection,
+		departureDateTime, currencyCode, basePrice, discountedPrice, administrationFeePrice):
 		'''
 		:param: connection From where to where this flight is going
 		:param: airline Enum of which airline performs this flight
@@ -35,8 +37,8 @@ class ScheduledFlight:
 		'''
 		self.airLine = airLine
 		self.flightNumber = flightNumber 
-		self.departureStation = departureStation
-		self.arrivalStation = arrivalStation
+		self.departureStation = connection.source_airport
+		self.arrivalStation = connection.dest_airport
 		self.departureDateTime = departureDateTime
 		self.currencyCode = currencyCode
 		self.basePrice = basePrice
