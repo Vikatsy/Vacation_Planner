@@ -1,6 +1,7 @@
 import requests
 import data_model 
 from data_model import Airlines
+from datetime import datetime
 
 class WizzairScraper:
 
@@ -118,8 +119,7 @@ class WizzairScraper:
 
         r = self.session.post(url, json=payload)
         data = r.json()
-        # print (data.keys())
-        # print (data['outboundFlights'][0])
+        print (data.keys())
         airLine = 'WIZZ'
         outbound_flight =  data['outboundFlights'][0]
         flightNumber = outbound_flight['flightNumber']
@@ -132,7 +132,7 @@ class WizzairScraper:
         discountedPrice = fares['discountedPrice']['amount']
         administrationFeePrice = fares['administrationFeePrice']['amount']
         connection = data_model.Connection(departureStation, arrivalStation)
-
+        
         y = data_model.Flight(airLine, 
             flightNumber, 
             connection,
@@ -144,7 +144,7 @@ class WizzairScraper:
     
         return y
 
-    def  possible_flight(departure_iata, date1, date2):
+    def  possible_flight(self, departure_iata, date1, date2):
         # get all possible flights from city between these dates
         # param: departure_iata IATA shot name of departure city
         # param: date1 date2  in format year-month-day 
@@ -192,11 +192,21 @@ class WizzairScraper:
 # 3. For each pair of cities (TLV, RIX) 
 # get flight dates
 ########################################################################################
-
-# for source_city_code, destination_city_code in destinations_from_israel:
-#     url = f'{apiUrl}search/flightDates?departureStation={source_city_code}'
-#             '&arrivalStation={destination_city_code}&from=2018-01-25&to=2018-03-28'
-#     print(url)
+    def get_time_table(self, connect, date_from, date_to):
+        source_city_code = connect.source_airport
+        destination_city_code = connect.dest_airport 
+        date1 = date_from
+        date2 = date_to  
+        # for source_city_code, destination_city_code in destinations_from_israel:
+        url = f'{self.api_url}/search/flightDates?departureStation={source_city_code}&arrivalStation={destination_city_code}&from={date1}&to={date2}'
+        # https://be.wizzair.com/7.8.5/Api/search/flightDates?departureStation=TLV&arrivalStation=VNO&from=2018-02-02&to=2018-04-05   
+        r = self.session.get(url)
+        data = r.json()
+        data_clear =[]
+        for d in  data['flightDates']:
+            data_clear.append(d.partition('T')[0])
+        
+        return data_clear
 # =>
 # {"flightDates":["2018-01-27T00:00:00","2018-01-30T00:00:00","2018-02-03T00:00:00","2018-02-06T00:00:00","2018-02-10T00:00:00",
 # "2018-02-13T00:00:00","2018-02-17T00:00:00","2018-02-20T00:00:00","2018-02-24T00:00:00","2018-02-27T00:00:00",

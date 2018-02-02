@@ -2,11 +2,13 @@
 import wizzair_scraper as ws
 # import ryanair_scraper as rs
 import data_model as dm
+import pprint
 # import database as db
 # import my_data_model as my
 
 
 def main(): 
+	pp = pprint.PrettyPrinter(indent=4)
 	wizz_scraper = ws.WizzairScraper() # = ws
 	# ryan_scraper = rs.RyanairScraper()
 
@@ -17,13 +19,27 @@ def main():
 	def get_my_destinations(my_city):
 		all_dest = wizz_scraper.get_destination_map()
 		return all_dest[my_city]
-	my_dest = get_my_destinations (my_city)	
 
-	# print (my_dest)
+	my_dest = get_my_destinations (my_city)
+	print (my_dest)
+	a =[]
 	# for d in my_dest: 
-	my_data = wizz_scraper.flight_info(my_city, "VNO", "2018-02-20")
-	print(my_data.airLine)
-	print(my_data.discountedPrice)
+		# print(d)
+	# import pdb; pdb.set_trace()
+
+	c = dm.Connection(source_airport=my_city, dest_airport="VNO")
+	date_from = "2018-02-20"
+	date_to = "2018-03-01"
+
+	all_flights = wizz_scraper.get_time_table(c, date_from, date_to)
+	pp.pprint(all_flights)
+	# import pdb; pdb.set_trace()
+
+	my_data = wizz_scraper.flight_info(my_city, 'VNO', "2018-02-20")
+	a.append(my_data)
+	for item in range(0, len(a)):
+		# for k,v in item.items():
+		pp.pprint(a[item].__dict__)
 
 	# all_wizz_cities = wizz_scraper.get_destinations_cities()
 	# all_destination_map = wizz_scraper.get_destination_map()
