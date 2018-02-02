@@ -1,13 +1,13 @@
 import requests
-# import database
-import data_model
+import data_model 
 from data_model import Airlines
 
-class WizzairScraper():
+class WizzairScraper:
 
-    TYPE = Airlines.WIZZ
+    # TYPE = Airlines.WIZZ
 
-    def __init__(self, city, date_interval):
+    def __init__(self):
+         
         headers = {
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.95 Safari/537.36",
             "Accept": "application/json, text/plain, */*",
@@ -15,22 +15,24 @@ class WizzairScraper():
             "Accept-Language": "en-US,en;q=0.8,lt;q=0.6,ru;q=0.4",
         }
 
-        self.city = city
-        self.time_interval =  date_interval
+        # # s = requests.Session()
+        # # s.headers.update(headers)
+        # url = 'https://be.wizzair.com/7.8.3/Api/'    
+        # # to get cookies
+        # # r = s.get("https://www.wizzair.com/")
+        # self.session = requests.Session()
+        # s.headers.update(headers)
 
-        s = requests.Session()
-        s.headers.update(headers)
-
-        # to get cookies
-        r = s.get("https://www.wizzair.com/")
-
-        self.session = s
+        self.session  = requests.Session()
+        self.session.headers.update(headers)
+        self.r = self.session.get("https://www.wizzair.com/")
         self.api_url = self._get_api_url()
-
+        # to get cookies
+        # import pdb; pdb.set_trace() 
         # self.list_of_cities = None
 
 
-        print(self.api_url)
+        # print(self.api_url)
 
 
     def _get_api_url(self):
@@ -47,12 +49,12 @@ class WizzairScraper():
         return apiUrl
 
 
-    def get_destinations_cities(self, source_iata):
+    def get_destinations_cities(self):
 
         # get destination map
         # return dict {Name of City : IAT} for all destination
 
-        url3 = f'{self.apiUrl}/asset/map?languageCode=en-gb'
+        url3 = f'{self.api_url}/asset/map?languageCode=en-gb'
         list_of_cities ={}
         r = self.session.get(url3)
         map_of_dest = r.json()
@@ -88,14 +90,15 @@ class WizzairScraper():
     def api_connection(self, url):
         pass     
 
-    def flight_info(iata_dep, iata_arr, date):
+    def flight_info(self, iata_dep, iata_arr, date):
         # get information about flight 
         # param: departure_iata IATA shot name of departure city
         # param: arrival_iata IATA shot name of arrival city
         # param: date  in format year-month-day 
 
 
-        url = f'{self.apiUrl}/search/search'
+        
+        url = f'{self.api_url}/search/search'
 
         payload = {
             "flightList":[
@@ -115,8 +118,9 @@ class WizzairScraper():
 
         r = self.session.post(url, json=payload)
         data = r.json()
-        
-        airLine = TYPE
+        # print (data.keys())
+        # print (data['outboundFlights'][0])
+        airLine = 'WIZZ'
         outbound_flight =  data['outboundFlights'][0]
         flightNumber = outbound_flight['flightNumber']
         departureStation = outbound_flight['departureStation']
@@ -127,17 +131,17 @@ class WizzairScraper():
         basePrice = fares['basePrice']['amount']
         discountedPrice = fares['discountedPrice']['amount']
         administrationFeePrice = fares['administrationFeePrice']['amount']
+        connection = data_model.Connection(departureStation, arrivalStation)
 
         y = data_model.Flight(airLine, 
             flightNumber, 
-            departureStation, 
-            arrivalStation, 
+            connection,
             departureDateTime, 
             currencyCode, 
             basePrice, 
             discountedPrice, 
             administrationFeePrice)
-        self.y = y
+    
         return y
 
     def  possible_flight(departure_iata, date1, date2):
@@ -147,9 +151,9 @@ class WizzairScraper():
         pass
         
     
-        conn = database.create_connection('Vacation.db')
+        # conn = database.create_connection('Vacation.db')
 
-        database.create_flight(conn,y)
+        # database.create_flight(conn,y)
 
 
 # israel_connections = israel['connections']

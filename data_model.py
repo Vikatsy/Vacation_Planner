@@ -17,9 +17,10 @@ class Connection:
 		self.dest_airport = dest_airport
 
 
-class Airlines (Enum): 
+class Airlines: 
 	WIZZ = 'Wizzair'
 	RYAN = 'Ryanair'
+	def __init__(self): pass
 
 
 
