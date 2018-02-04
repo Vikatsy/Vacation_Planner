@@ -3,6 +3,7 @@ import wizzair_scraper as ws
 # import ryanair_scraper as rs
 import data_model as dm
 import pprint
+from My_Alchemy 
 # import database as db
 # import my_data_model as my
 
