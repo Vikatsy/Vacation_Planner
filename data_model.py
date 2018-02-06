@@ -15,6 +15,9 @@ class Connection:
 		"""
 		self.source_airport = source_airport
 		self.dest_airport = dest_airport
+		
+	def __repr__(self):
+		return f"Connection from {self.source_airport} to {self.dest_airport}"
 
 
 class Airlines: 

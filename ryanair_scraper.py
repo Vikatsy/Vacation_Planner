@@ -1,7 +1,9 @@
 import requests
 
 headers = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.95 Safari/537.36",
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36",
+    "Origin": "https://www.ryanair.com",
+    "Referer": "https://www.ryanair.com/gb/en/booking/home",
     "Accept": "application/json, text/plain, */*",
     "Accept-Encoding": "gzip, deflate, sdch, br",
     "Accept-Language": "en-US,en;q=0.8,lt;q=0.6,ru;q=0.4",
@@ -9,19 +11,53 @@ headers = {
 
 s = requests.Session()
 s.headers.update(headers)
+coo = s.get("https://www.ryanair.com/")
+url ='https://api.ryanair.com/aggregate/4/common?embedded=airports,countries,cities,regions,nearbyAirports,defaultAirport&market=en-gb'
+r = s.get(url)
+# import pdb;pdb.set_trace()
+# print(r.text)
+
+data = r.json()
+
+url2 = 'https://desktopapps.ryanair.com/v4/Calendar?Destination=BGY&IncludeConnectingFlights=true&IsTwoWay=false&Months=17&Origin=TLV&StartDate=2018-02-06'
+r = s.get(url2)
+data = r.json
+# print(r.text)
+
+# import pdb; pdb.set_trace()
+
+url3 = 'https://desktopapps.ryanair.com/v4/en-ie/availability?ADT=1&CHD=0&DateOut=2018-03-26&Destination=BGY&FlexDaysOut=4&INF=0&IncludeConnectingFlights=true&Origin=TLV&RoundTrip=false&TEEN=0&ToUs=AGREED&exists=false&promoCode='
+r = s.get(url3)
+
+data = r.json()
+# print(data)
+c = data['trips']
+print(c)
+print(data.keys())
+
+
+
+payload = {"trips": [{'origin': 'TLV','destination': 'BGY}'}]}
+            # 'dates': [{'DateOut':'2018-03-26T00:00:00.000'}]
+        
+    
+r = s.get(url3, json=payload)
+data = r.json()
+print(data)
+
 
 # to get cookies
-r = s.get("https://www.ryanair.com/")
+# r = s.get("https://www.ryanair.com/")
 
-payload = {
-    "flight": "",
-    "departure": "",
-    "arrival": "",
-    "minDepartureTime": "",
-    "maxDepartureTime": ""
-    }
+# payload = {
+#     "flight": "",
+#     "departure": "",
+#     "arrival": "",
+#     "minDepartureTime": "",
+#     "maxDepartureTime": ""
+#     }
     
-    # "adultCount": 1,
+#     # "adultCount": 1,
     # "childCount": 0,
     # "infantCount": 0,
     # "wdc": True,
@@ -38,13 +74,13 @@ payload = {
 # "2018-03-03T00:00:00","2018-03-06T00:00:00","2018-03-10T00:00:00","2018-03-13T00:00:00","2018-03-17T00:00:00",
 # "2018-03-20T00:00:00","2018-03-24T00:00:00","2018-03-27T00:00:00"]}
 
-url = 'http://apigateway.ryanair.com/pub/v1/timetable/3/schedules/TLV/BGY/years/2018/months/02?apikey=tsVQ06jsOAWup17HPPkrQSZjon32yOik'
+# url = 'http://apigateway.ryanair.com/pub/v1/timetable/3/schedules/TLV/BGY/years/2018/months/02?apikey=tsVQ06jsOAWup17HPPkrQSZjon32yOik'
+# url ='https://api.ryanair.com/aggregate/4/common?embedded=airports,countries,cities,regions,nearbyAirports,defaultAirport&market=en-gb'
+# r = requests.post(url, json=payload)
 
-r = requests.post(url, json=payload)
+# print(r.text)
 
-print(r.text)
-
-data = r.json()
+# data = r.json()
 # import pdb;pdb.set_trace()
 
 #print(data['outboundFlights'][0]['flightNumber'])

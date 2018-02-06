@@ -72,9 +72,9 @@ class WizzairScraper:
         # get all destinatination for each city 
         # { 'LTN': ['GDN', 'WAW', 'BUD', 'KTW', 'KUN', ...], 'LGW': ['OTP'] }
 
-        url3 = f'{self.api_url}/asset/map?languageCode=en-gb'
+        url = f'{self.api_url}/asset/map?languageCode=en-gb'
         list_of_cities ={}
-        r = self.session.get(url3)
+        r = self.session.get(url)
         map_of_dest = r.json()
 
         destination = dict()
