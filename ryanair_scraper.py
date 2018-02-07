@@ -14,55 +14,61 @@ s.headers.update(headers)
 coo = s.get("https://www.ryanair.com/")
 url ='https://api.ryanair.com/aggregate/4/common?embedded=airports,countries,cities,regions,nearbyAirports,defaultAirport&market=en-gb'
 r = s.get(url)
-# import pdb;pdb.set_trace()
 # print(r.text)
-
 data = r.json()
+# print(data['airports'])
+# print(data['defaultAirport'])
+for x in range (0, len(data['airports'])):
+    print (data['airports'][x]['iataCode'])
+
+rout = data['airports'][0]['routes']
+my_rout = [d.partition(':')[2] for d in rout if d.partition(':')[0] == 'airport']
+# print (my_rout)
+        
+
+
+
 
 url2 = 'https://desktopapps.ryanair.com/v4/Calendar?Destination=BGY&IncludeConnectingFlights=true&IsTwoWay=false&Months=17&Origin=TLV&StartDate=2018-02-06'
 r = s.get(url2)
-data = r.json
-# print(r.text)
+data = r.json()
+print(data)
 
 # import pdb; pdb.set_trace()
 
 url3 = 'https://desktopapps.ryanair.com/v4/en-ie/availability?ADT=1&CHD=0&DateOut=2018-03-26&Destination=BGY&FlexDaysOut=4&INF=0&IncludeConnectingFlights=true&Origin=TLV&RoundTrip=false&TEEN=0&ToUs=AGREED&exists=false&promoCode='
-r = s.get(url3)
+# r = s.get(url3)
 
-data = r.json()
-# print(data)
-c = data['trips']
-print(c)
-print(data.keys())
+# data = r.json()
+# # print(data)
+# c = data['trips']
+# # print(c)
+# print(data.keys())
 
 
 
-payload = {"trips": [{'origin': 'TLV','destination': 'BGY}'}]}
-            # 'dates': [{'DateOut':'2018-03-26T00:00:00.000'}]
+payload = {"trips": [{'origin': 'TLV','destination': 'BGY','dates': [{'DateOut':'2018-03-26T00:00:00.000'}]} ]}
+            
         
     
 r = s.get(url3, json=payload)
 data = r.json()
-print(data)
+# print(data['currency'])
+# # print(data['trips'][0])
+# print(data['trips'][0])
+# print(data['trips'][0]['dates'][0]['flights'][0]['flightNumber'])
+# # print(data['trips'][0]['origin'])
+# # print(data['trips'][0]['destination'])
+# print(data['trips'][0]['dates'])
+# print(data['trips'][0]['dates'][0]['flights'][0]['regularFare'])
 
 
-# to get cookies
-# r = s.get("https://www.ryanair.com/")
 
-# payload = {
-#     "flight": "",
-#     "departure": "",
-#     "arrival": "",
-#     "minDepartureTime": "",
-#     "maxDepartureTime": ""
-#     }
-    
-#     # "adultCount": 1,
-    # "childCount": 0,
-    # "infantCount": 0,
-    # "wdc": True,
-    # "dayInterval": 7
-
+# url4 = 'https://flights.ryanair.com/booking/airline/widget/change'
+# r = s.get(url4)
+# print(r.text)
+# data = r.json()
+#
 
 # get from https://wizzair.com/static/metadata.json
 # in ['apiUrl']
