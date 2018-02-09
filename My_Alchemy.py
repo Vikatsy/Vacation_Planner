@@ -74,7 +74,7 @@ date_to = "2018-03-01"
 wizz_flights = m.main_wizz(my_city)
 print(wizz_flights) 
 for d in wizz_flights: print (d.__dict__)
-
+###########################################################################################
 # multiple inserting:
 def insert_flight(flights_list):
 	data =[]
