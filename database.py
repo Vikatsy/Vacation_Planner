@@ -102,5 +102,39 @@ def get_schediled_flights(conn):
 
 if __name__ == '__main__':
 	main()        
+    exit(0)
+
+    # from database import create_connection, save_flight, #...
+    # conn = create_connection()
+    # ...
+    # save_flight(conn, flight)
+
+    # flight = read_flight(conn, city, date)
+    # ...
+
+
+
+# class SqliteBackend(object):
+#     def __init__(self):
+#         self.conn = None
+#         pass
+
+#     def create_connection(self, db_file):
+#         self.conn = ...
+
+#     def create_table(self, create_table_sql):
+#         self.conn = 
+
+
+    # from database import SqliteBackend
+    # 
+    # sqlite = SqliteBackend()
+    # sqlite.create_connection()
+    # ...
+    # sqlite.save_flight(flight)
+
+    # flight = sqlite.read_flight(city, date)
+    # ...
+
 
  
