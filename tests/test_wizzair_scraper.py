@@ -14,19 +14,18 @@ class WizzAirScraperTest(unittest.TestCase):
 
     @classmethod
     def teardownClass(cls):
-    	pass
+        pass
 
     def setUp(self):
-    	pass
+        pass
 
     def tearDown(self):
-    	pass
+        pass
 
 
     def test_get_api(self):
-    	scraper = WizzairScraper()
-    	api_url = scraper._get_api_url()
-    	import re
-		ok_(re.match('https:\/\/be\.wizzair\.com\/\d\.\d\.\d\/Api', api_url))
-    	# eq_(1, 1)
-    
+        scraper = WizzairScraper()
+        api_url = scraper._get_api_url()
+        import re
+        ok_(re.match('https:\/\/be\.wizzair\.com\/\d\.\d\.\d\/Api', api_url))
+        # eq_(1, 1)
