@@ -24,8 +24,15 @@ def main():
 	map_of_dest = r.json()
 	print(len(map_of_dest['cities']))
 	data = map_of_dest['cities']
-	for city in  range(len(data)):
-		G.add_node(data[city]['iata'], pos = (data[city]['longitude'], data[city]['latitude']))
+
+	# for i in  range(len(data)):
+	# 	city = data[i]
+	# 	G.add_node(city['iata'], pos = (city['longitude'], city['latitude']))
+
+	for city in data:
+		G.add_node(city['iata'], pos=(city['longitude'], city['latitude']))
+
+
 		 # print(map_of_dest['cities'][city]['longitude'])
 		 # print(map_of_dest['cities'][city]['latitude'])
 	destination = dict()
@@ -44,9 +51,9 @@ def main():
 	for x,y in destination.items():
 	# 	# print(x)
 	# 	G.add_node(x)	
-		for i in range(len(y)):
-		# 	# print(x,y[i]) 
-			G.add_edge(x,y[i]) 
+		for i in y:
+	 
+			G.add_edge(x,i) 
 	# print(list(G.edges()))	
 	# print(list(G.nodes()))	
 	# for node in  range (len(list(G.nodes()))): print(G.node['longitude'])
@@ -69,23 +76,24 @@ def main():
 	# for item in G:
 	# 	print(item) 
 	
-	pos = {city:(lon,lat) for (city, (lat, lon)) in nx.get_node_attributes(G, 'pos').items()}
+	pos = {city: (lat, lon) for (city, (lat, lon)) in nx.get_node_attributes(G, 'pos').items()}
 	# print(pos.keys())
 	# print(pos)
 	
-	pos1 ={ x:pos[x] for x in list(neib)}
-	print (pos1)
-	while True:
-		try:
-			nx.draw_networkx_nodes(G, pos1, with_labels=True, node_size=0)
-			plt.show() 
-			break
-		except Exception as e:
-			print('KOOKO')
-			raise
+	pos1 = {x: pos[x] for x in list(neib)}
+	pos1['TLV'] = pos['TLV']
+	# print (pos1)
+	# while True:
+	# 	try:
+	# nx.draw_networkx_nodes(G, pos, nodelist=pos1.keys(), with_labels=True, node_size=0)
+	# plt.show() 
+		# 	break
+		# except Exception as e:
+		# 	print('KOOKO')
+		# 	raise
 	
-		
-	nx.draw_networkx_nodes(G, pos1, with_labels=True, node_size=0)
+	print(G.nodes)
+	nx.draw_networkx(G, pos, nodelist=['TLV'], edgelist=[x for x in G.edges() if 'TLV' in x], with_labels=False, node_size=0)
 	plt.show() 
 		
 

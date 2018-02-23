@@ -1,12 +1,16 @@
 from data_model import Airlines
+import requests
 
 import wizzair_scraper as ws
 import ryanair_scraper as rs
 import data_model as dm
 import pprint
 import My_Alchemy 
+from flask import Flask
+import time
 
-
+app = Flask(__name__)
+pp = pprint.PrettyPrinter(indent=4)
 
 def main_scrape(scraper, my_city, date_from, date_to): 
 	# wizz_scraper = ws.WizzairScraper() # = ws
@@ -17,15 +21,20 @@ def main_scrape(scraper, my_city, date_from, date_to):
 		return all_dest[my_city]
 
 	my_dest = get_my_destinations (my_city)
-	
+	# print(my_dest)
+
 	a=[]
-	for y in range(0, len(my_dest)):
-		c = dm.Connection(source_airport=my_city, dest_airport=my_dest[y])
+	for y in my_dest:
+		c = dm.Connection(source_airport=my_city, dest_airport=y)
 		all_flights = scraper.get_time_table(c, date_from, date_to)
+		# print(all_flights)
 		
-		for x in  range (0, len(all_flights)):
-			my_data = scraper.flight_info(my_city, my_dest[y], all_flights[x])
-			a.append(my_data)
+		for x in  all_flights:
+			if x is not False:
+				my_data = scraper.flight_info(my_city, y, x)
+				a.append(my_data)
+	time.sleep(3)			
+	# print (a)
 	return a	
 	
 
@@ -58,9 +67,15 @@ def scrape(city, date_from, date_to):
 
 
 
-# @app.route('/scrape/')
+@app.route('/scrape/')
 def do_all_scraping():
-	
+# create scrapers using factory
+	# per scraper (airline):
+	# - get all connections for this airline 
+	# - (optional) save all connections for this airline to DB, replacing old records where needed
+	# - for each connection:
+	#   - get flights (with dates and prices) two months forward
+	# 	- save flights to database (replace)	
 	flights_curr = scrape('TLV', "2018-02-20","2018-03-20" )
 	return flights_curr
 	
@@ -71,9 +86,17 @@ def do_all_scraping():
 	# - for each connection:
 	#   - get flights (with dates and prices) two months forward
 	# 	- save flights to database (replace)
+
+@app.route('/fly/')
+def get_flights():
+	# make form and redirect to '/fly/<city_from>/<city_to>/'
+	return 'Please go to /fly/[city_from]/[city_to]/'
+
+
 	
-# @app.route('/fly/')
-def get_flights_somewhere():
+@app.route('/fly/<city_from>/<city_to>/<date_from>/<date_return>/')
+def get_flights_somewhere(city_from, city_to, date_from, date_return):
+
 
     # dep_city = form. ....
     # date_dep  = form. ....
@@ -88,12 +111,12 @@ def get_flights_somewhere():
 #     #   - get from database the flights from destination to dep_city on date_back
 #     #   - make pairs
 #     # return pairs
-	pass
+	return f'Flying from {city_from} to {city_to} on {date_from} and back on {date_return}...'
 
 def foo_one():
 	pp = pprint.PrettyPrinter(indent=4)
 	my_city = 'TLV'
-	date_from = "2018-02-20"
+	date_from = "2018-02-23"
 	date_to = "2018-03-01"
 
 	wizz_flights = main_wizz(my_city)
@@ -115,9 +138,14 @@ def scrape_and_print():
 
 
 if __name__ == "__main__":
-	scrape_and_print()
-	# app = Flask()
-	# app.run()
+	# flights_curr = scrape('TLV', "2018-02-28","2018-03-20" )
+	# print(flights_curr)
+	f = main_scrape(ws.WizzairScraper(), 'TLV', "2018-02-28","2018-03-10")
+	# pp.pprint(f)	
+	# scrape_and_print()
+	# app.run(debug=True)
+
+	# template.render(path='templates/my_template.jin2')
 
 # all_wizz_cities = wizz_scraper.get_destinations_cities()
 	# all_destination_map = wizz_scraper.get_destination_map()

@@ -49,9 +49,17 @@ class Flight:
 		self.discountedPrice = discountedPrice
 		self.administrationFeePrice = administrationFeePrice
 
-
+	def __repr__(self):
+		return f"FLight {self.airLine} {self.flightNumber}  time {self.departureDateTime} to {self.arrivalStation}" 
+			
 class ActualFlight:
 	def __init__(self, scheduled_flight, departure_date_time, price_in_usd):
 		pass
 
+class Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 

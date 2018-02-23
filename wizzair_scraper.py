@@ -49,7 +49,7 @@ class WizzairScraper:
 
         return apiUrl
 
-
+    # @staticmethod    
     def get_destinations_cities(self):
 
         # get destination map
@@ -59,6 +59,7 @@ class WizzairScraper:
         list_of_cities ={}
         r = self.session.get(url3)
         map_of_dest = r.json()
+        # print (map_of_dest)
         for x in range (len(map_of_dest['cities'])):
             list_of_cities[map_of_dest['cities'][x]['shortName']] = map_of_dest['cities'][x]['iata']
         # self.list_of_cities = list_of_cities
@@ -126,12 +127,14 @@ class WizzairScraper:
         arrivalStation = outbound_flight['arrivalStation']
         departureDateTime  = outbound_flight['departureDateTime']
         fares = outbound_flight['fares'][0]
+        # print(fares)
         currencyCode = fares['basePrice']['currencyCode']
         basePrice = fares['basePrice']['amount']
         discountedPrice = fares['discountedPrice']['amount']
         administrationFeePrice = fares['administrationFeePrice']['amount']
         connection = data_model.Connection(departureStation, arrivalStation)
-        
+
+       
         y = data_model.Flight(airLine, 
             flightNumber, 
             connection,
@@ -160,7 +163,7 @@ class WizzairScraper:
 
 
 
-# url2 = 'https://be.wizzair.com/7.8.2/Api/search/flightDates?departureStation=TLV&arrivalStation=VNO&from=2018-01-23&to=2018-03-26'
+# url2 = 'https://be.wizzair.com/7.8.6/Api/search/flightDates?departureStation=TLV&arrivalStation=VNO&from=2018-02-23&to=2018-03-26'
 # r2 = s.get(url)
 
 ###############################################################################
@@ -197,10 +200,12 @@ class WizzairScraper:
         date1 = date_from
         date2 = date_to  
         # for source_city_code, destination_city_code in destinations_from_israel:
-        url = f'{self.api_url}/search/flightDates?departureStation={source_city_code}&arrivalStation={destination_city_code}&from={date1}&to={date2}'
-        # https://be.wizzair.com/7.8.5/Api/search/flightDates?departureStation=TLV&arrivalStation=VNO&from=2018-02-02&to=2018-04-05   
+        
+        # url = f'{self.api_url}/search/flightDates?departureStation={source_city_code}&arrivalStation={destination_city_code}&from={date1}&to={date2}'
+        url = f'{self.api_url}/search/flightDates?departureStation={source_city_code}&arrivalStation={destination_city_code}&from={date1}&to={date2}'   
         r = self.session.get(url)
         data = r.json()
+        # print (data)
         data_clear =[]
         for d in  data['flightDates']:
             data_clear.append(d.partition('T')[0])
@@ -212,3 +217,11 @@ class WizzairScraper:
 # "2018-03-03T00:00:00","2018-03-06T00:00:00","2018-03-10T00:00:00","2018-03-13T00:00:00","2018-03-17T00:00:00",
 # "2018-03-20T00:00:00","2018-03-24T00:00:00","2018-03-27T00:00:00"]}
 #########################################
+if __name__ == '__main__':
+    connect = data_model.Connection('TLV','VNO')
+    c = WizzairScraper()
+    time = c.get_time_table(connect, '2018-04-27','2018-06-01')
+    print (time)
+    # flight = c.flight_info('TLV', 'VNO', '2018-02-27')
+    # print(flight) 
+
