@@ -9,6 +9,8 @@ import My_Alchemy
 from flask import Flask
 import time
 
+# DATABASE = VacationAlchemy()
+
 app = Flask(__name__)
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -27,13 +29,14 @@ def main_scrape(scraper, my_city, date_from, date_to):
 	for y in my_dest:
 		c = dm.Connection(source_airport=my_city, dest_airport=y)
 		all_flights = scraper.get_time_table(c, date_from, date_to)
-		# print(all_flights)
+		print(all_flights)
 		
 		for x in  all_flights:
 			if x is not False:
 				my_data = scraper.flight_info(my_city, y, x)
+				print(my_city, y, x)
 				a.append(my_data)
-	time.sleep(3)			
+	# time.sleep(3)			
 	# print (a)
 	return a	
 	
@@ -45,7 +48,6 @@ def get_scraper(airline_type):
 		return ws.WizzairScraper()
 	elif airline_type == Airlines.RYAN:
 		return rs.RyanairScraper()
-
 
 SCRAPERS = [ 
 	# ws.WizzairScraper(), 
@@ -67,25 +69,20 @@ def scrape(city, date_from, date_to):
 
 
 
-@app.route('/scrape/')
-def do_all_scraping():
+@app.route('/scrape/<city_from>/<date_from>/<date_to>/')
+def do_all_scraping(city_from, date_from, date_to):
 # create scrapers using factory
 	# per scraper (airline):
 	# - get all connections for this airline 
 	# - (optional) save all connections for this airline to DB, replacing old records where needed
 	# - for each connection:
 	#   - get flights (with dates and prices) two months forward
-	# 	- save flights to database (replace)	
-	flights_curr = scrape('TLV', "2018-02-20","2018-03-20" )
+	# 	- save flights to database (replace)
+
+	flights_curr = scrape(city_from, date_from, date_to)
+	My_Alchemy.Alchemy_Connection.insert_flights(flights_curr)
 	return flights_curr
 	
-	# create scrapers using factory
-	# per scraper (airline):
-	# - get all connections for this airline 
-	# - (optional) save all connections for this airline to DB, replacing old records where needed
-	# - for each connection:
-	#   - get flights (with dates and prices) two months forward
-	# 	- save flights to database (replace)
 
 @app.route('/fly/')
 def get_flights():
@@ -113,35 +110,15 @@ def get_flights_somewhere(city_from, city_to, date_from, date_return):
 #     # return pairs
 	return f'Flying from {city_from} to {city_to} on {date_from} and back on {date_return}...'
 
-def foo_one():
-	pp = pprint.PrettyPrinter(indent=4)
-	my_city = 'TLV'
-	date_from = "2018-02-23"
-	date_to = "2018-03-01"
 
-	wizz_flights = main_wizz(my_city)
-	print(wizz_flights) 
-	for d in wizz_flights: print (d.__dict__)
-
-	# main_ryan(my_city) 
-
-def scrape_and_print():
-	do_all_scraping()
-	my_city = 'TLV'
-	date_from = "2018-02-20"
-	date_to = "2018-03-01"
-	flight_pairs = backend_get_flights_somewhere(my_city, date_from, date_to)
-
-	for flight_a, flight_b in flight_pairs:
-		print() 
 
 
 
 if __name__ == "__main__":
 	# flights_curr = scrape('TLV', "2018-02-28","2018-03-20" )
 	# print(flights_curr)
-	f = main_scrape(ws.WizzairScraper(), 'TLV', "2018-02-28","2018-03-10")
-	# pp.pprint(f)	
+	f = main_scrape(ws.WizzairScraper(), 'TLV', "2018-03-10","2018-04-30")
+	pp.pprint(f)	
 	# scrape_and_print()
 	# app.run(debug=True)
 

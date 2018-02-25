@@ -1,7 +1,10 @@
 import requests
 import data_model 
 from data_model import Airlines
+import datetime
 from datetime import datetime
+from datetime import timedelta
+
 
 class WizzairScraper:
 
@@ -120,6 +123,7 @@ class WizzairScraper:
 
         r = self.session.post(url, json=payload)
         data = r.json()
+        print(data)
         airLine = 'WIZZ'
         outbound_flight =  data['outboundFlights'][0]
         flightNumber = outbound_flight['flightNumber']
@@ -188,7 +192,15 @@ class WizzairScraper:
 
 # @TODO write to database to scheduled Flights table
 
-
+    def intervals(start, end, delta):
+    # if end < delta:
+    #   yield start, delta
+        curr = start
+        while curr  < end:
+            if curr+delta > end: 
+                yield curr, end
+            else: yield curr,curr+delta 
+            curr += delta+1 
 
 ########################################################################################
 # 3. For each pair of cities (TLV, RIX) 
@@ -197,19 +209,32 @@ class WizzairScraper:
     def get_time_table(self, connect, date_from, date_to):
         source_city_code = connect.source_airport
         destination_city_code = connect.dest_airport 
-        date1 = date_from
-        date2 = date_to  
-        # for source_city_code, destination_city_code in destinations_from_israel:
+        date_format = "%Y-%m-%d"
+        d0 = datetime.strptime(date_from, date_format)
+        d1 = datetime.strptime(date_to, date_format)
+        delta= timedelta(days=61)
         
-        # url = f'{self.api_url}/search/flightDates?departureStation={source_city_code}&arrivalStation={destination_city_code}&from={date1}&to={date2}'
-        url = f'{self.api_url}/search/flightDates?departureStation={source_city_code}&arrivalStation={destination_city_code}&from={date1}&to={date2}'   
-        r = self.session.get(url)
-        data = r.json()
-        # print (data)
-        data_clear =[]
-        for d in  data['flightDates']:
-            data_clear.append(d.partition('T')[0])
-        
+        def intervals(start, end, delta):
+        # if end < delta:
+        #   yield start, delta
+            curr = start
+            while curr  < end:
+                if curr+delta > end: 
+                    yield curr, end
+                else: yield curr,curr+delta 
+                curr += delta +  timedelta(days=1)
+                
+        data_clear =[]       
+        for result in  intervals(d0,d1,delta):  
+            # url = f'{self.api_url}/search/flightDates?departureStation={source_city_code}&arrivalStation={destination_city_code}&from={date1}&to={date2}'
+            url = f'{self.api_url}/search/flightDates?departureStation={source_city_code}&arrivalStation={destination_city_code}&from={result[0]}&to={result[1]}'   
+            r = self.session.get(url)
+            data = r.json()
+            # print (data)
+           
+            for d in  data['flightDates']:
+                data_clear.append(d.partition('T')[0])
+          
         return data_clear
 # =>
 # {"flightDates":["2018-01-27T00:00:00","2018-01-30T00:00:00","2018-02-03T00:00:00","2018-02-06T00:00:00","2018-02-10T00:00:00",
@@ -218,10 +243,10 @@ class WizzairScraper:
 # "2018-03-20T00:00:00","2018-03-24T00:00:00","2018-03-27T00:00:00"]}
 #########################################
 if __name__ == '__main__':
-    connect = data_model.Connection('TLV','VNO')
+    connect = data_model.Connection('TLV','LUZ')
     c = WizzairScraper()
-    time = c.get_time_table(connect, '2018-04-27','2018-06-01')
+    time = c.get_time_table(connect, '2018-03-02','2018-04-07')
     print (time)
-    # flight = c.flight_info('TLV', 'VNO', '2018-02-27')
-    # print(flight) 
+    flight = c.flight_info('TLV', 'LUZ', '2018-03-06')
+    print(flight) 
 
