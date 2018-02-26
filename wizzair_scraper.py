@@ -123,6 +123,7 @@ class WizzairScraper:
 
         r = self.session.post(url, json=payload)
         data = r.json()
+        # import pdb; pdb.set_trace()
         print(data)
         airLine = 'WIZZ'
         outbound_flight =  data['outboundFlights'][0]
@@ -130,12 +131,20 @@ class WizzairScraper:
         departureStation = outbound_flight['departureStation']
         arrivalStation = outbound_flight['arrivalStation']
         departureDateTime  = outbound_flight['departureDateTime']
-        fares = outbound_flight['fares'][0]
-        # print(fares)
-        currencyCode = fares['basePrice']['currencyCode']
-        basePrice = fares['basePrice']['amount']
-        discountedPrice = fares['discountedPrice']['amount']
-        administrationFeePrice = fares['administrationFeePrice']['amount']
+
+        all_fares = outbound_flight['fares']
+        if not all_fares:
+            currencyCode = None
+            basePrice = None
+            discountedPrice = None
+            administrationFeePrice  = None
+        else:
+            fares = all_fares[0]
+            # print(fares)
+            currencyCode = fares['basePrice']['currencyCode']
+            basePrice = fares['basePrice']['amount']
+            discountedPrice = fares['discountedPrice']['amount']
+            administrationFeePrice = fares['administrationFeePrice']['amount']
         connection = data_model.Connection(departureStation, arrivalStation)
 
        
@@ -211,26 +220,29 @@ class WizzairScraper:
         destination_city_code = connect.dest_airport 
         date_format = "%Y-%m-%d"
         d0 = datetime.strptime(date_from, date_format)
-        d1 = datetime.strptime(date_to, date_format)
+        d1 = datetime.strptime(date_to, date_format) + timedelta(days=1)
         delta= timedelta(days=61)
         
         def intervals(start, end, delta):
         # if end < delta:
-        #   yield start, delta
+        #   yield start, delt
             curr = start
             while curr  < end:
-                if curr+delta > end: 
+                if curr+delta >= end: 
                     yield curr, end
                 else: yield curr,curr+delta 
                 curr += delta +  timedelta(days=1)
                 
         data_clear =[]       
-        for result in  intervals(d0,d1,delta):  
+        for result in  intervals(d0,d1,delta):
+            if d0 == d1:
+                url = f'{self.api_url}/search/flightDates?departureStation={source_city_code}&arrivalStation={destination_city_code}&from={result[0]}' 
+            else:   
             # url = f'{self.api_url}/search/flightDates?departureStation={source_city_code}&arrivalStation={destination_city_code}&from={date1}&to={date2}'
-            url = f'{self.api_url}/search/flightDates?departureStation={source_city_code}&arrivalStation={destination_city_code}&from={result[0]}&to={result[1]}'   
+                url = f'{self.api_url}/search/flightDates?departureStation={source_city_code}&arrivalStation={destination_city_code}&from={result[0]}&to={result[1]}'   
             r = self.session.get(url)
             data = r.json()
-            # print (data)
+            print (data)
            
             for d in  data['flightDates']:
                 data_clear.append(d.partition('T')[0])
