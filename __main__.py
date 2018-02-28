@@ -29,18 +29,16 @@ def main_scrape(scraper, my_city, date_from, date_to):
 	for y in my_dest:
 		c = dm.Connection(source_airport=my_city, dest_airport=y)
 		time.sleep(3)
-		print(c)
+		# print(c)
 		all_flights = scraper.get_time_table(c, date_from, date_to)
-		print(all_flights)
-		time.sleep(3)
+		# print(all_flights)
+		# time.sleep(3)
 		for x in  all_flights:
-			if x is not None:
-				print(my_city, y, x)
-				my_data = scraper.flight_info(my_city, y, x)
-				print(my_city, y, x)
-				a.append(my_data)
-			else: break	
-			time.sleep(4)			
+			print(my_city, y, x)
+			my_data = scraper.flight_info(my_city, y, x)
+			# print(my_city, y, x)
+			if my_data: a.append(my_data)
+						
 	# print (a)
 	return a	
 	
@@ -84,7 +82,7 @@ def do_all_scraping(city_from, date_from, date_to):
 	# 	- save flights to database (replace)
 
 	flights_curr = scrape(city_from, date_from, date_to)
-	f = main_scrape(ws.WizzairScraper(), 'TLV', "2018-03-02","2018-05-20")
+	f = main_scrape(ws.WizzairScraper(), 'TLV', "2018-03-02","2018-03-03")
 	pp.pprint(f)
 	database = My_Alchemy.Alchemy_Connection()
 	database.insert_flights(f)	
@@ -128,11 +126,11 @@ if __name__ == "__main__":
 	# pp.pprint(f)
 	# print(type(f))
 	# DATABASE = My_Alchemy.Flight_Alch()
-
+	f = scrape('TLV', "2018-05-10","2018-05-12")
 	# database = My_Alchemy.Alchemy_Connection()
 	# database.insert_flights(f)	
 
-	f = main_scrape(rs.RyanairScraper(), 'TLV', "2018-05-10","2018-05-20")
+	# f = main_scrape(rs.RyanairScraper(), 'TLV', "2018-05-10","2018-05-20")
 	pp.pprint(f)
 	print(type(f))
 	# scrape_and_print()

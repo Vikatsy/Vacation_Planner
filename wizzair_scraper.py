@@ -242,7 +242,7 @@ class WizzairScraper:
                 url = f'{self.api_url}/search/flightDates?departureStation={source_city_code}&arrivalStation={destination_city_code}&from={result[0]}&to={result[1]}'   
             r = self.session.get(url)
             data = r.json()
-            print (data)
+            # print (data)
            
             for d in  data['flightDates']:
                 data_clear.append(d.partition('T')[0])
@@ -258,7 +258,7 @@ if __name__ == '__main__':
     connect = data_model.Connection('TLV','LUZ')
     c = WizzairScraper()
     time = c.get_time_table(connect, '2018-03-02','2018-04-07')
-    print (time)
+    # print (time)
     flight = c.flight_info('TLV', 'LUZ', '2018-03-06')
-    print(flight) 
+    # print(flight) 
 

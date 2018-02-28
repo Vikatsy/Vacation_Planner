@@ -5,6 +5,7 @@ import datetime
 from datetime import datetime
 from datetime import timedelta
 import time
+import re
 
 class RyanairScraper:
 
@@ -59,7 +60,8 @@ class RyanairScraper:
         for x in range (len(map_of_dest['airports'])):
             list_of_cities[map_of_dest['airports'][x]['name']] = map_of_dest['airports'][x]['iataCode']
         # self.list_of_cities = list_of_cities
-
+        # print (list_of_cities)
+        # list_of_cities.remove('MAD|Air Europa')
         return list_of_cities
         
 
@@ -76,12 +78,32 @@ class RyanairScraper:
         list_of_cities ={}
         destination = dict()
 
-        for x in  range (0, len(map_of_dest['airports'])):
-            city_iata_code = map_of_dest['airports'][x]['iataCode']
-            connection = map_of_dest['airports'][x]['routes']
-            my_conn = [d.partition(':')[2] for d in connection if d.partition(':')[0] == 'airport']
-            destination[city_iata_code] = my_conn 
+        for x in  map_of_dest['airports']:
+            city_iata_code = x['iataCode']
+            # print (city_iata_code)    
+            connection = x['routes']
+            # print (connection)
+            # for item in connection: (lambda item: item if x!= 'airport:MAD|Air Europa' else 'airport:MAD')
+            # my_conn = [d.partition(':')[2] for d in connection if d.partition(':')[0] == 'airport']
+            my_conn =[]
+            for d in connection:
+                if d.partition(':')[0] == 'airport':
+                    iata = d.partition(':')[2]
+                    if len(iata) > 3:
+                        iata = iata.partition('|')[0] 
+                    my_conn.append(iata)
+                    # print (my_conn)
+                    # print (len(my_conn))
+                    # if len(my_conn) > 3:
+                    #     my_conn = my_conn.partition('|')[0] 
+            # print (my_conn)
+            # for item in my_conn: (lambda item: item if x!= 'MAD|Air Europa' else 'MAD')
+               
+            
+                destination[city_iata_code] = my_conn 
             # print (my_conn)   
+        # del destination['MAD|Air Europa']
+        print (destination)    
         return destination 
         
 
@@ -98,48 +120,53 @@ class RyanairScraper:
         
         # url = 'https://desktopapps.ryanair.com/v4/en-ie/availability?ADT=1&CHD=0&DateOut=2018-03-26&Destination=BGY&FlexDaysOut=4&INF=0&IncludeConnectingFlights=true&Origin=TLV&RoundTrip=false&TEEN=0&ToUs=AGREED&exists=false&promoCode='
         # url = 'https://api.ryanair.com/farefinder/3/oneWayFares?&departureAirportIataCode={iata_dep}&language=en&limit=16&market=en-gb&offset=0&outboundDepartureDateFrom=2018-02-28&outboundDepartureDateTo=2018-10-28&priceValueTo=150
-
-        url = f'https://api.ryanair.com/farefinder/3/oneWayFares?&departureAirportIataCode={iata_dep}&arrivalAirportIataCode={iata_arr}&language=en&limit=16&market=en-gb&offset=0&outboundDepartureDateFrom={date}&outboundDepartureDateTo={date}'
-
-        # payload = {"trips": [{'origin': 'TLV','destination': 'BGY','dates': [{'DateOut':'2018-03-26T00:00:00.000'}]} ]}   
-        r = self.session.get(url)
-        data = r.json()
-        
-        print(data)
-        airLine = 'RYAN'
-        outbound_flight =  data['fares']
-        if not outbound_flight:
-
-            flightNumber = '2006'
-            departureStation = None
-            arrivalStation = None
-            departureDateTime  = None
-            currencyCode = None
-            basePrice = None
-            discountedPrice = 'NOT FIND'
-            administrationFeePrice = 'NOT FIND'
-            connection = data_model.Connection(departureStation, arrivalStation)
+        if not date: 
+            return None 
         else:    
-            flightNumber = '2006'
-            departureStation = outbound_flight[0]['outbound']['departureAirport']['iataCode']
-            arrivalStation = outbound_flight[0]['outbound']['arrivalAirport']['iataCode']
-            departureDateTime  = outbound_flight[0]['outbound']['departureDate']
-            currencyCode = outbound_flight[0]['outbound']['price']['currencyCode']
-            basePrice = outbound_flight[0]['outbound']['price']['value']
-            discountedPrice = 'NOT FIND'
-            administrationFeePrice = 'NOT FIND'
-            connection = data_model.Connection(departureStation, arrivalStation)
-        
-        y = data_model.Flight(airLine, 
-                flightNumber, 
-                connection,
-                departureDateTime, 
-                currencyCode, 
-                basePrice, 
-                discountedPrice, 
-                administrationFeePrice)
-        
-        return y
+            url = f'https://api.ryanair.com/farefinder/3/oneWayFares?&departureAirportIataCode={iata_dep}&arrivalAirportIataCode={iata_arr}&language=en&limit=16&market=en-gb&offset=0&outboundDepartureDateFrom={date}&outboundDepartureDateTo={date}'
+
+            # payload = {"trips": [{'origin': 'TLV','destination': 'BGY','dates': [{'DateOut':'2018-03-26T00:00:00.000'}]} ]}   
+            r = self.session.get(url)
+            data = r.json()
+            
+            
+            airLine = 'RYAN'
+            
+            if not 'fares' in data:
+                return None
+                # flightNumber = '2006'
+                # departureStation = None
+                # arrivalStation = None
+                # departureDateTime  = None
+                # currencyCode = None
+                # basePrice = None
+                # discountedPrice = 'NOT FIND'
+                # administrationFeePrice = 'NOT FIND'
+                # connection = data_model.Connection(departureStation, arrivalStation)
+            else:  
+                # print(data)
+                outbound_flight =  data['fares'][0]['outbound'] 
+                # print (data['fares'])
+                flightNumber = '2006'
+                departureStation = outbound_flight['departureAirport']['iataCode']
+                arrivalStation = outbound_flight['arrivalAirport']['iataCode']
+                departureDateTime  = outbound_flight['departureDate']
+                currencyCode = outbound_flight['price']['currencyCode']
+                basePrice = outbound_flight['price']['value']
+                discountedPrice = 'NOT FIND'
+                administrationFeePrice = 'NOT FIND'
+                connection = data_model.Connection(departureStation, arrivalStation)
+            
+            y = data_model.Flight(airLine, 
+                    flightNumber, 
+                    connection,
+                    departureDateTime, 
+                    currencyCode, 
+                    basePrice, 
+                    discountedPrice, 
+                    administrationFeePrice)
+            
+            return y
 
     def  possible_flight(self, departure_iata, date1, date2):
         # get all possible flights from city between these dates
@@ -210,18 +237,23 @@ class RyanairScraper:
         # url3 = 'https://desktopapps.ryanair.com/Calendar?Destination={destination_city_code}&IsTwoWay=false&Months=16&Origin=CFU&StartDate=2018-03-06'
         
         # url = f'https://desktopapps.ryanair.com/v4/Calendar?Destination={destination_city_code}&IncludeConnectingFlights=true&IsTwoWay=false&Origin={source_city_code}&StartDate={date_from}'
-        url = f'https://desktopapps.ryanair.com/v4/Calendar?Destination={connect.dest_airport}&IncludeConnectingFlights=true&IsTwoWay=false&Origin=TLV&StartDate=2018-03-05'
+        url = f'https://desktopapps.ryanair.com/v4/Calendar?Destination={connect.dest_airport}&IncludeConnectingFlights=false&IsTwoWay=false&Origin=TLV&StartDate={date_from}'
         r = self.session.get(url)
         data = r.json()
+        if 'outboundDates' in data:
         # print(data)
-        # data_clear =[]
-        
-        # for d in  data['outboundDates']:
-        #     if d<= date_to:
-        #         data_clear.append(d.partition('T')[0])
-        print(data)
-        # logger.debug(f"get_time_table: returning {data_clear}")
-        return list(data)
+            data_clear =[]
+            
+            for d in  data['outboundDates']:
+                if  datetime.strptime(d, date_format)<= date2:
+                    data_clear.append(d.partition('T')[0])
+          
+            # logger.debug(f"get_time_table: returning {data_clear}")
+            # print (data_clear)
+            return data_clear
+        else:  
+            print('No date table')
+            return None  
 # =>
 # {"flightDates":["2018-01-27T00:00:00","2018-01-30T00:00:00","2018-02-03T00:00:00","2018-02-06T00:00:00","2018-02-10T00:00:00",
 # "2018-02-13T00:00:00","2018-02-17T00:00:00","2018-02-20T00:00:00","2018-02-24T00:00:00","2018-02-27T00:00:00",
@@ -234,15 +266,18 @@ if __name__ == '__main__':
 
     # print(cities)
     a =  c.get_destination_map()
+    print(a['TLV'])
+    # a['TLV'].remove('MAD|Air Europa')
+    # print(a['TLV'])
     for city in a['TLV']:
         connect = data_model.Connection('TLV',city)
         print (connect)
-        # c = RyanairScraper()
-        ti = c.get_time_table(connect, '2018-03-02','2018-05-20')
+        #
+        ti = c.get_time_table(connect, '2018-05-02','2018-05-03')
         print (ti)
         time.sleep(3)
         for t in ti: 
             flight = c.flight_info('TLV', city, t)
             print(flight) 
     # f = c.flight_info('TLV', 'BGY', '2018-03-07')
-    print(f)
+    # print(f)
