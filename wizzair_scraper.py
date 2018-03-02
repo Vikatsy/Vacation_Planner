@@ -124,7 +124,7 @@ class WizzairScraper:
         r = self.session.post(url, json=payload)
         data = r.json()
         # import pdb; pdb.set_trace()
-        print(data)
+        # print(data)
         airLine = 'WIZZ'
         outbound_flight =  data['outboundFlights'][0]
         flightNumber = outbound_flight['flightNumber']

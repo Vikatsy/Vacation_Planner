@@ -103,7 +103,7 @@ class RyanairScraper:
                 destination[city_iata_code] = my_conn 
             # print (my_conn)   
         # del destination['MAD|Air Europa']
-        print (destination)    
+        # print (destination)    
         return destination 
         
 
@@ -230,7 +230,7 @@ class RyanairScraper:
         date1 = datetime.strptime(date_from, date_format)
         date2 = datetime.strptime(date_to, date_format) 
         delta = date2-date1
-        print(delta)
+        # print(delta)
         # d1 = datetime.strptime(date_to, date_format) + timedelta(days=1) 
         # for source_city_code, destination_city_code in destinations_from_israel:
         # url = f'https://desktopapps.ryanair.com/v4/Calendar?Destination={destination_city_code}&IncludeConnectingFlights=true&IsTwoWay=false&Months=17&Origin={source_city_code}&StartDate={date1}'
@@ -278,6 +278,6 @@ if __name__ == '__main__':
         time.sleep(3)
         for t in ti: 
             flight = c.flight_info('TLV', city, t)
-            print(flight) 
+            # print(flight) 
     # f = c.flight_info('TLV', 'BGY', '2018-03-07')
     # print(f)

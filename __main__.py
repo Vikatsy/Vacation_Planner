@@ -28,7 +28,7 @@ def main_scrape(scraper, my_city, date_from, date_to):
 	a=[]
 	for y in my_dest:
 		c = dm.Connection(source_airport=my_city, dest_airport=y)
-		time.sleep(3)
+		time.sleep(1)
 		# print(c)
 		all_flights = scraper.get_time_table(c, date_from, date_to)
 		# print(all_flights)
@@ -61,7 +61,7 @@ def scrape(city, date_from, date_to):
 	flights = []
 	for scraper in SCRAPERS:
 		this_flights = main_scrape(scraper, city, date_from, date_to)
-		flights.append(this_flights)
+		flights.extend(this_flights)
 	return flights
 
 # DATABASE = VacationAlchemy()
@@ -82,11 +82,9 @@ def do_all_scraping(city_from, date_from, date_to):
 	# 	- save flights to database (replace)
 
 	flights_curr = scrape(city_from, date_from, date_to)
-	f = main_scrape(ws.WizzairScraper(), 'TLV', "2018-03-02","2018-03-03")
-	pp.pprint(f)
 	database = My_Alchemy.Alchemy_Connection()
-	database.insert_flights(f)	
-	return flights_curr
+	database.insert_flights(flights_curr)	
+	return f'your flights are ready{database.get_all_flights()}'
 	
 
 @app.route('/fly/')
@@ -113,7 +111,12 @@ def get_flights_somewhere(city_from, city_to, date_from, date_return):
 #     #   - get from database the flights from destination to dep_city on date_back
 #     #   - make pairs
 #     # return pairs
-	return f'Flying from {city_from} to {city_to} on {date_from} and back on {date_return}...'
+	flights_curr = scrape(city_from, date_from, date_return)
+	database = My_Alchemy.Alchemy_Connection()
+	database.insert_flights(flights_curr)	
+	# database.insert_flights(flights_curr)	
+	return f'your flights  from {city_from} to {city_to} are ready {database.get_flight(arrivalStation = city_to)}'
+	# return f'Flying from {city_from} to {city_to} on {date_from} and back on {date_return}...'
 
 
 
@@ -126,15 +129,20 @@ if __name__ == "__main__":
 	# pp.pprint(f)
 	# print(type(f))
 	# DATABASE = My_Alchemy.Flight_Alch()
-	f = scrape('TLV', "2018-05-10","2018-05-12")
+	# f = scrape('TLV', "2018-03-05","2018-03-07")
 	# database = My_Alchemy.Alchemy_Connection()
 	# database.insert_flights(f)	
+	# # all_f = database.get_all_flights() 
+	# # for item in all_f: 
+	# # 	print (item)
+	# filter_flight = database.get_flight(arrivalStation = 'BGY')
+	# pp.pprint (filter_flight)
 
-	# f = main_scrape(rs.RyanairScraper(), 'TLV', "2018-05-10","2018-05-20")
-	pp.pprint(f)
-	print(type(f))
+	# # f = main_scrape(rs.RyanairScraper(), 'TLV', "2018-05-10","2018-05-20")
+	# pp.pprint(f)
+	# print(type(f))
 	# scrape_and_print()
-	# app.run(debug=True)
+	app.run(debug=True)
 
 	# template.render(path='templates/my_template.jin2')
 

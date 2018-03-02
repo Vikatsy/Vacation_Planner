@@ -6,13 +6,16 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from data_model import Flight, Connection
+import pprint
 
+pp = pprint.PrettyPrinter(indent=4)
 Base = declarative_base() 
 
 class Flight_Alch(Base): # Data Object (DO)
 	__tablename__ = 'flights'
 	flight_id = Column(Integer(), primary_key=True)
 	airLine = Column(String(16), index=True)
+	flightNumber = Column(String(6), index=True)
 	departureStation  = Column(String(16), index=True)
 	arrivalStation  = Column(String(16), index=True)
 	departureDateTime = Column(String(16), index=True)
@@ -23,6 +26,7 @@ class Flight_Alch(Base): # Data Object (DO)
 
 	def __repr__(self):
 		return f"Flight_Alch(airLine='{self.airLine}', " \
+				f"flightNumber='{self.flightNumber}', " \
 				f"departureStation='{self.departureStation}', " \
 				f"arrivalStation='{self.arrivalStation}', " \
 				f"departureDateTime='{self.departureDateTime}', " \
@@ -31,23 +35,42 @@ class Flight_Alch(Base): # Data Object (DO)
 				f"discountedPrice='{self.discountedPrice}', " \
 				f"administrationFeePrice='{self.administrationFeePrice}')"
 
+class Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]	        			
+
 	# def __eq__(self):
 
 # import __main__ as m
 # from __main__ import main_wizz
 
-class Alchemy_Connection(object):  # Data Access Object (DAO)
+class Alchemy_Connection(metaclass=Singleton):  # Data Access Object (DAO)
 
 	def __init__(self, path_to_file=None):
-		engine_address = path_to_file if path_to_file is not None else 'sqlite:///memory:'
+		engine_address = path_to_file if path_to_file is not None else 'sqlite:///vacation.db'
 		self.engine  = create_engine(engine_address, echo=True)
 		self.session_maker = sessionmaker(bind=self.engine)
 		self.session = self.session_maker()
 
 		Base.metadata.create_all(self.engine)
 
+	# def __repr__(self):
+	# 	return f"Alchemy_Connection(airLine='{self.airLine}', " \
+	# 			f"flightNumber='{self.flightNumber}', " \
+	# 			f"departureStation='{self.departureStation}', " \
+	# 			f"arrivalStation='{self.arrivalStation}', " \
+	# 			f"departureDateTime='{self.departureDateTime}', " \
+	# 			f"currencyCode='{self.currencyCode}', " \
+	# 			f"basePrice='{self.basePrice}', " \
+	# 			f"discountedPrice='{self.discountedPrice}', " \
+	# 			f"administrationFeePrice='{self.administrationFeePrice}')"
+	
 	def insert_flight(self, flight):
 		do = Flight_Alch(airLine = flight.airLine,
+						flightNumber = flight.flightNumber,
 						departureStation = flight.departureStation,
 						arrivalStation = flight.arrivalStation,
 						departureDateTime = flight.departureDateTime,
@@ -78,19 +101,37 @@ class Alchemy_Connection(object):  # Data Access Object (DAO)
 		ret_value = []
 		for do in flight_dos:
 			# make Flight object from do
-			flight = Flight(airLine=do.airLine, 
-				)
+			conn = Connection(do.departureStation, do.arrivalStation)
+			flight = Flight(airLine = do.airLine, flightNumber = do.flightNumber, connection = conn,
+							departureDateTime = do.departureDateTime, currencyCode = do.currencyCode , 
+							basePrice = do.basePrice, discountedPrice = do.discountedPrice,
+							administrationFeePrice = do.administrationFeePrice)
+			# print(flight)
 			ret_value.append(flight)
 		return ret_value
 
 	def get_flight(self, airLine=None, departureStation=None, arrivalStation=None, departureDateTime=None):
-		if departureStation is not None:
-			pass
+		ret_value =[]
+		if arrivalStation is not None:
+			value = self.session.query(Flight_Alch).filter(Flight_Alch.arrivalStation == arrivalStation).all()
+			# print (value)
+			for do in value:
+				conn = Connection(do.departureStation, do.arrivalStation)
+				flight = Flight(airLine = do.airLine, flightNumber = do.flightNumber, connection = conn,
+								departureDateTime = do.departureDateTime, currencyCode = do.currencyCode , 
+								basePrice = do.basePrice, discountedPrice = do.discountedPrice,
+								administrationFeePrice = do.administrationFeePrice) 
+				ret_value.append(flight)
+		# print (ret_value)
+			
 
-		pass # return ret_value
+		return ret_value
 
 
-
+if __name__ == '__main__':
+	database = Alchemy_Connection()
+	filter_flight = database.get_flight(arrivalStation = 'BGY')
+	pp.pprint (filter_flight)
 
 	# # insert one instance:
 	# cc_flight =  Flight_Alch(airLine = 'WIZZ',
