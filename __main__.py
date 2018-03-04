@@ -8,11 +8,17 @@ import pprint
 import My_Alchemy 
 from flask import Flask
 import time
+import datetime
+from datetime import timedelta
 
 # DATABASE = VacationAlchemy()
 
 app = Flask(__name__)
 pp = pprint.PrettyPrinter(indent=4)
+
+now = datetime.datetime.now()
+today =  now.date()
+final_date = today + timedelta(days=10)
 
 def main_scrape(scraper, my_city, date_from, date_to): 
 	# wizz_scraper = ws.WizzairScraper() # = ws
@@ -28,7 +34,7 @@ def main_scrape(scraper, my_city, date_from, date_to):
 	a=[]
 	for y in my_dest:
 		c = dm.Connection(source_airport=my_city, dest_airport=y)
-		time.sleep(1)
+		# time.sleep(2)
 		# print(c)
 		all_flights = scraper.get_time_table(c, date_from, date_to)
 		# print(all_flights)
@@ -38,6 +44,7 @@ def main_scrape(scraper, my_city, date_from, date_to):
 			my_data = scraper.flight_info(my_city, y, x)
 			# print(my_city, y, x)
 			if my_data: a.append(my_data)
+			# time.sleep(7)
 						
 	# print (a)
 	return a	
@@ -81,9 +88,9 @@ def do_all_scraping(city_from, date_from, date_to):
 	#   - get flights (with dates and prices) two months forward
 	# 	- save flights to database (replace)
 
-	flights_curr = scrape(city_from, date_from, date_to)
+	# flights_curr = scrape(city_from, date_from, date_to)
 	database = My_Alchemy.Alchemy_Connection()
-	database.insert_flights(flights_curr)	
+	# database.insert_flights(flights_curr)	
 	return f'your flights are ready{database.get_all_flights()}'
 	
 
@@ -111,11 +118,12 @@ def get_flights_somewhere(city_from, city_to, date_from, date_return):
 #     #   - get from database the flights from destination to dep_city on date_back
 #     #   - make pairs
 #     # return pairs
-	flights_curr = scrape(city_from, date_from, date_return)
+	# flights_curr = scrape(city_from, date_from, date_return)
 	database = My_Alchemy.Alchemy_Connection()
-	database.insert_flights(flights_curr)	
 	# database.insert_flights(flights_curr)	
-	return f'your flights  from {city_from} to {city_to} are ready {database.get_flight(arrivalStation = city_to)}'
+	# database.insert_flights(flights_curr)	
+	# d = database.get_flight(arrivalStation=city_to)
+	return f"your flights  from {city_from} to {city_to} are ready{database.get_flight(arrivalStation=city_to)}"
 	# return f'Flying from {city_from} to {city_to} on {date_from} and back on {date_return}...'
 
 
@@ -123,18 +131,18 @@ def get_flights_somewhere(city_from, city_to, date_from, date_return):
 
 
 if __name__ == "__main__":
-	# flights_curr = scrape('TLV', "2018-02-28","2018-03-20" )
-	# print(flights_curr)
-	# f = main_scrape(ws.WizzairScraper(), 'TLV', "2018-03-10","2018-03-10")
-	# pp.pprint(f)
-	# print(type(f))
-	# DATABASE = My_Alchemy.Flight_Alch()
-	# f = scrape('TLV', "2018-03-05","2018-03-07")
-	# database = My_Alchemy.Alchemy_Connection()
-	# database.insert_flights(f)	
-	# # all_f = database.get_all_flights() 
-	# # for item in all_f: 
-	# # 	print (item)
+	# flights_curr = scrape('TLV', '2018-03-05','2018-03-18')
+	# pprint(flights_curr)
+	f = main_scrape(ws.WizzairScraper(), 'TLV', "2018-03-05","2018-03-10")
+	# # pp.pprint(f)
+	# # print(type(f))
+	# # DATABASE = My_Alchemy.Flight_Alch()
+	# # f = scrape('TLV', "2018-03-05","2018-03-07")
+	database = My_Alchemy.Alchemy_Connection()
+	database.insert_flights(f)	
+	# all_f = database.get_all_flights() 
+	# for item in all_f: 
+	# 	print (item)
 	# filter_flight = database.get_flight(arrivalStation = 'BGY')
 	# pp.pprint (filter_flight)
 
@@ -142,7 +150,7 @@ if __name__ == "__main__":
 	# pp.pprint(f)
 	# print(type(f))
 	# scrape_and_print()
-	app.run(debug=True)
+	# app.run(debug=True)
 
 	# template.render(path='templates/my_template.jin2')
 

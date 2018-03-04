@@ -144,7 +144,7 @@ class RyanairScraper:
                 # administrationFeePrice = 'NOT FIND'
                 # connection = data_model.Connection(departureStation, arrivalStation)
             else:  
-                # print(data)
+                print(data)
                 outbound_flight =  data['fares'][0]['outbound'] 
                 # print (data['fares'])
                 flightNumber = '2006'

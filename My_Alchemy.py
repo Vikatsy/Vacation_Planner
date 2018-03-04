@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 from sqlalchemy import (Table, Column, Integer, Numeric, String, DateTime, ForeignKey)
 from sqlalchemy.ext.declarative import declarative_base 
 from sqlalchemy.orm import relationship, backref
@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from data_model import Flight, Connection
+from datetime import datetime
 import pprint
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -15,14 +16,14 @@ class Flight_Alch(Base): # Data Object (DO)
 	__tablename__ = 'flights'
 	flight_id = Column(Integer(), primary_key=True)
 	airLine = Column(String(16), index=True)
-	flightNumber = Column(String(6), index=True)
+	flightNumber = Column(Integer(), index=True)
 	departureStation  = Column(String(16), index=True)
 	arrivalStation  = Column(String(16), index=True)
-	departureDateTime = Column(String(16), index=True)
-	currencyCode  = Column(String(16), index=True)
-	basePrice  = Column(String(16), index=True)
-	discountedPrice  = Column(String(16), index=True)
-	administrationFeePrice = Column(String(16), index=True)
+	departureDateTime = Column(DateTime())
+	currencyCode  = Column(String(16))
+	basePrice  = Column(Integer())
+	discountedPrice  = Column(String(16))
+	administrationFeePrice = Column(String(16))
 
 	def __repr__(self):
 		return f"Flight_Alch(airLine='{self.airLine}', " \
@@ -70,14 +71,15 @@ class Alchemy_Connection(metaclass=Singleton):  # Data Access Object (DAO)
 	
 	def insert_flight(self, flight):
 		do = Flight_Alch(airLine = flight.airLine,
-						flightNumber = flight.flightNumber,
+						flightNumber = int(flight.flightNumber),
 						departureStation = flight.departureStation,
 						arrivalStation = flight.arrivalStation,
-						departureDateTime = flight.departureDateTime,
+						departureDateTime = datetime.strptime(flight.departureDateTime, "%Y-%m-%dT%H:%M:%S"),
 						currencyCode = flight.currencyCode,
 						basePrice = flight.basePrice,
 						discountedPrice = flight.discountedPrice,
 						administrationFeePrice= flight.administrationFeePrice)
+
 		self.session.add(do)
 		self.session.commit()
 
@@ -85,9 +87,10 @@ class Alchemy_Connection(metaclass=Singleton):  # Data Access Object (DAO)
 		data = []
 		for  f  in flights_list:
 			flight = Flight_Alch(airLine = f.airLine,
+						flightNumber = int(f.flightNumber),
 						departureStation = f.departureStation,
 						arrivalStation = f.arrivalStation,
-						departureDateTime = f.departureDateTime,
+						departureDateTime = datetime.strptime(f.departureDateTime, "%Y-%m-%dT%H:%M:%S"),
 						currencyCode = f.currencyCode,
 						basePrice = f.basePrice,
 						discountedPrice = f.discountedPrice,
@@ -98,23 +101,42 @@ class Alchemy_Connection(metaclass=Singleton):  # Data Access Object (DAO)
 
 	def get_all_flights(self):
 		flight_dos = self.session.query(Flight_Alch).all()
+
 		ret_value = []
-		for do in flight_dos:
+		for do in flight_dos: 
+			# print (do.departureDateTime)
+			# departureDateTime = do.departureDateTime.strftime("%Y-%m-%dT%H:%M:%S")
 			# make Flight object from do
+			print(do.departureDateTime.date())
 			conn = Connection(do.departureStation, do.arrivalStation)
-			flight = Flight(airLine = do.airLine, flightNumber = do.flightNumber, connection = conn,
-							departureDateTime = do.departureDateTime, currencyCode = do.currencyCode , 
+			flight = Flight(airLine = do.airLine, flightNumber =  do.flightNumber, connection = conn,
+							departureDateTime = do.departureDateTime.strftime("%Y-%m-%dT%H:%M:%S"),
+							currencyCode = do.currencyCode , 
 							basePrice = do.basePrice, discountedPrice = do.discountedPrice,
 							administrationFeePrice = do.administrationFeePrice)
 			# print(flight)
 			ret_value.append(flight)
 		return ret_value
 
-	def get_flight(self, airLine=None, departureStation=None, arrivalStation=None, departureDateTime=None):
-		ret_value =[]
-		if arrivalStation is not None:
-			value = self.session.query(Flight_Alch).filter(Flight_Alch.arrivalStation == arrivalStation).all()
-			# print (value)
+	def get_flight(self, airLine=None, departure=None, arrival=None, departureDate=None):
+		print(departureDate)
+		departureDate = datetime.strptime(departureDate, '%Y-%m-%d')
+		print(departureDate)
+		ret_value = []
+		if departure:
+			if (arrival is not None)&(departureDate is not None):
+				today = departureDate.replace(hour=0, minute=0, second=0, microsecond=0)
+				tomorrow = departureDate.replace(hour=23, minute=59, second=59, microsecond=0)
+				value = self.session.query(Flight_Alch).filter(
+						Flight_Alch.arrivalStation==arrival,
+						Flight_Alch.departureDateTime >= today,
+						Flight_Alch.departureDateTime < tomorrow)
+
+			elif (arrival is not None)&(departureDate is  None):	
+				value = self.session.query(Flight_Alch).filter(Flight_Alch.arrivalStation==arrival)
+			elif (arrival is  None)&(departureDateTime is not None):
+				value = self.session.query(Flight_Alch).filter(Flight_Alch.departureDateTime.date()== departureDate)		
+
 			for do in value:
 				conn = Connection(do.departureStation, do.arrivalStation)
 				flight = Flight(airLine = do.airLine, flightNumber = do.flightNumber, connection = conn,
@@ -123,15 +145,21 @@ class Alchemy_Connection(metaclass=Singleton):  # Data Access Object (DAO)
 								administrationFeePrice = do.administrationFeePrice) 
 				ret_value.append(flight)
 		# print (ret_value)
-			
+		else: 
+			 return None
 
 		return ret_value
 
 
 if __name__ == '__main__':
 	database = Alchemy_Connection()
-	filter_flight = database.get_flight(arrivalStation = 'BGY')
-	pp.pprint (filter_flight)
+	flights = database.get_all_flights()
+	pp.pprint (flights)
+	filter_flights = database.get_flight(departure='TLV', arrival='RIX', departureDate='2018-03-09')
+	pp.pprint(filter_flights) 
+
+	# f = database.get_all_flights()
+	# pp.pprint(f)
 
 	# # insert one instance:
 	# cc_flight =  Flight_Alch(airLine = 'WIZZ',
