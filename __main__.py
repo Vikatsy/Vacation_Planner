@@ -34,7 +34,7 @@ def main_scrape(scraper, my_city, date_from, date_to):
 	a=[]
 	for y in my_dest:
 		c = dm.Connection(source_airport=my_city, dest_airport=y)
-		# time.sleep(2)
+		time.sleep(3)
 		# print(c)
 		all_flights = scraper.get_time_table(c, date_from, date_to)
 		# print(all_flights)
@@ -44,7 +44,7 @@ def main_scrape(scraper, my_city, date_from, date_to):
 			my_data = scraper.flight_info(my_city, y, x)
 			# print(my_city, y, x)
 			if my_data: a.append(my_data)
-			# time.sleep(7)
+			time.sleep(7)
 						
 	# print (a)
 	return a	
@@ -133,11 +133,11 @@ def get_flights_somewhere(city_from, city_to, date_from, date_return):
 if __name__ == "__main__":
 	# flights_curr = scrape('TLV', '2018-03-05','2018-03-18')
 	# pprint(flights_curr)
-	f = main_scrape(ws.WizzairScraper(), 'TLV', "2018-03-05","2018-03-10")
+	# f = main_scrape(ws.WizzairScraper(), 'TLV', "2018-03-05","2018-03-10")
 	# # pp.pprint(f)
 	# # print(type(f))
 	# # DATABASE = My_Alchemy.Flight_Alch()
-	# # f = scrape('TLV', "2018-03-05","2018-03-07")
+	f = scrape('TLV', "2018-04-04","2018-04-10")
 	database = My_Alchemy.Alchemy_Connection()
 	database.insert_flights(f)	
 	# all_f = database.get_all_flights() 

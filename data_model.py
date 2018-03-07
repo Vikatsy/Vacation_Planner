@@ -51,7 +51,9 @@ class Flight:
 
 	def __repr__(self):
 		return f"FLight {self.airLine} {self.flightNumber}  time {self.departureDateTime} to {self.arrivalStation} {self.basePrice}{self.currencyCode}"
-			
+	
+
+
 class ActualFlight:
 	def __init__(self, scheduled_flight, departure_date_time, price_in_usd):
 		pass

@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from data_model import Flight, Connection
 from datetime import datetime
+import operator
 import pprint
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -58,16 +59,6 @@ class Alchemy_Connection(metaclass=Singleton):  # Data Access Object (DAO)
 
 		Base.metadata.create_all(self.engine)
 
-	# def __repr__(self):
-	# 	return f"Alchemy_Connection(airLine='{self.airLine}', " \
-	# 			f"flightNumber='{self.flightNumber}', " \
-	# 			f"departureStation='{self.departureStation}', " \
-	# 			f"arrivalStation='{self.arrivalStation}', " \
-	# 			f"departureDateTime='{self.departureDateTime}', " \
-	# 			f"currencyCode='{self.currencyCode}', " \
-	# 			f"basePrice='{self.basePrice}', " \
-	# 			f"discountedPrice='{self.discountedPrice}', " \
-	# 			f"administrationFeePrice='{self.administrationFeePrice}')"
 	
 	def insert_flight(self, flight):
 		do = Flight_Alch(airLine = flight.airLine,
@@ -117,6 +108,23 @@ class Alchemy_Connection(metaclass=Singleton):  # Data Access Object (DAO)
 			# print(flight)
 			ret_value.append(flight)
 		return ret_value
+	def get_flights_between_two_dates(self, departure, date_from, date_to):	
+		value = self.session.query(Flight_Alch).filter(
+						Flight_Alch.departureStation==departure,
+						Flight_Alch.departureDateTime >= date_from,
+						Flight_Alch.departureDateTime <= date_to)
+		ret_value=[]
+		for do in value:
+				conn = Connection(do.departureStation, do.arrivalStation)
+				flight = Flight(airLine = do.airLine, flightNumber = do.flightNumber, connection = conn,
+								departureDateTime = do.departureDateTime, currencyCode = do.currencyCode , 
+								basePrice = do.basePrice, discountedPrice = do.discountedPrice,
+								administrationFeePrice = do.administrationFeePrice) 
+				ret_value.append(flight)
+		return ret_value
+
+		
+
 
 	def get_flight(self, airLine=None, departure=None, arrival=None, departureDate=None):
 		print(departureDate)
@@ -150,13 +158,44 @@ class Alchemy_Connection(metaclass=Singleton):  # Data Access Object (DAO)
 
 		return ret_value
 
+	def get_airline_flights(self, airLine, date_to = None, date_from = None):
+		ret_value=[]
+		if (date_to == None)&(date_from == None):
+			value = self.session.query(Flight_Alch).filter(airLine== airLine)
+		else: 	
+			value = self.session.query(Flight_Alch).filter(
+						Flight_Alch.airLine==airLine,
+						Flight_Alch.departureDateTime >= date_from,
+						Flight_Alch.departureDateTime <= date_to)
+		for do in value:
+				conn = Connection(do.departureStation, do.arrivalStation)
+				flight = Flight(airLine = do.airLine, flightNumber = do.flightNumber, connection = conn,
+								departureDateTime = do.departureDateTime, currencyCode = do.currencyCode , 
+								basePrice = do.basePrice, discountedPrice = do.discountedPrice,
+								administrationFeePrice = do.administrationFeePrice) 
+				ret_value.append(flight)
+		return ret_value			
+
+
+
+
 
 if __name__ == '__main__':
 	database = Alchemy_Connection()
 	flights = database.get_all_flights()
 	pp.pprint (flights)
-	filter_flights = database.get_flight(departure='TLV', arrival='RIX', departureDate='2018-03-09')
-	pp.pprint(filter_flights) 
+	# filter_flights = database.get_flight(departure='TLV', arrival='RIX', departureDate='2018-03-09')
+	# pp.pprint(filter_flights) 
+	# two_dates = database.get_flights_between_two_dates('TLV', '2018-03-07', '2018-03-08')
+	# pp.pprint(two_dates)
+	# airline = database.get_airline_flights('RYAN',date_from='2018-04-06',date_to='2018-04-08')
+	# pp.pprint(airline)
+	sort_by_price = sorted(flights, key = operator.attrgetter('basePrice'))
+	pp.pprint(sort_by_price)
+
+	# sorted_x = sorted(x, key=operator.attrgetter('score'))
+	
+
 
 	# f = database.get_all_flights()
 	# pp.pprint(f)
