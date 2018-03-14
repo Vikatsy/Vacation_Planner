@@ -45,6 +45,8 @@ class RyanairScraper:
     #     print (apiUrl)
 
     #     return apiUrl
+    def pause(self):
+        time.sleep(7)
 
     # @classmethod
     def get_destinations_cities(self):
@@ -123,7 +125,12 @@ class RyanairScraper:
         if not date: 
             return None 
         else:    
-            url = f'https://api.ryanair.com/farefinder/3/oneWayFares?&departureAirportIataCode={iata_dep}&arrivalAirportIataCode={iata_arr}&language=en&limit=16&market=en-gb&offset=0&outboundDepartureDateFrom={date}&outboundDepartureDateTo={date}'
+            url = f'https://api.ryanair.com/farefinder/3/oneWayFares?' \
+                    f'&departureAirportIataCode={iata_dep}' \
+                    f'&arrivalAirportIataCode={iata_arr}' \
+                    f'&language=en&limit=16&market=en-gb&offset=0' \
+                    f'&outboundDepartureDateFrom={date}' \
+                    f'&outboundDepartureDateTo={date}'
 
             # payload = {"trips": [{'origin': 'TLV','destination': 'BGY','dates': [{'DateOut':'2018-03-26T00:00:00.000'}]} ]}   
             r = self.session.get(url)
@@ -156,7 +163,7 @@ class RyanairScraper:
                 discountedPrice = 'NOT FIND'
                 administrationFeePrice = 'NOT FIND'
                 connection = data_model.Connection(departureStation, arrivalStation)
-            
+
             y = data_model.Flight(airLine, 
                     flightNumber, 
                     connection,

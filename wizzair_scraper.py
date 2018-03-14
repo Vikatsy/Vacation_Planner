@@ -4,7 +4,9 @@ from data_model import Airlines
 import datetime
 from datetime import datetime
 from datetime import timedelta
-
+import time
+from currency_converter import CurrencyConverter
+import re
 
 class WizzairScraper:
 
@@ -38,6 +40,8 @@ class WizzairScraper:
 
         # print(self.api_url)
 
+    def pause(self):
+        time.sleep(3)
 
     def _get_api_url(self):
         
@@ -63,8 +67,8 @@ class WizzairScraper:
         r = self.session.get(url3)
         map_of_dest = r.json()
         # print (map_of_dest)
-        for x in range (len(map_of_dest['cities'])):
-            list_of_cities[map_of_dest['cities'][x]['shortName']] = map_of_dest['cities'][x]['iata']
+        for x in map_of_dest['cities']:
+            shortName = 'iata'
         # self.list_of_cities = list_of_cities
 
         return list_of_cities
@@ -102,7 +106,7 @@ class WizzairScraper:
         # param: date  in format year-month-day 
 
 
-        
+        c = CurrencyConverter()
         url = f'{self.api_url}/search/search'
 
         payload = {
@@ -141,10 +145,16 @@ class WizzairScraper:
         else:
             fares = all_fares[0]
             # print(fares)
+
             currencyCode = fares['basePrice']['currencyCode']
             basePrice = fares['basePrice']['amount']
             discountedPrice = fares['discountedPrice']['amount']
             administrationFeePrice = fares['administrationFeePrice']['amount']
+            if currencyCode != 'EUR':
+                discountedPrice = c.convert(discountedPrice, currencyCode)
+                administrationFeePrice = c.convert(administrationFeePrice,currencyCode)
+                currencyCode = 'EUR'
+                print(type(currencyCode))
         connection = data_model.Connection(departureStation, arrivalStation)
 
        
@@ -257,8 +267,9 @@ class WizzairScraper:
 if __name__ == '__main__':
     connect = data_model.Connection('TLV','LUZ')
     c = WizzairScraper()
-    time = c.get_time_table(connect, '2018-03-02','2018-04-07')
-    # print (time)
-    flight = c.flight_info('TLV', 'LUZ', '2018-03-06')
-    # print(flight) 
+    time = c.get_time_table(connect, '2018-03-10','2018-04-07')
+    print (time)
+    
+    flight = c.flight_info('TLV', 'LUZ', '2018-03-10')
+    print(flight) 
 
